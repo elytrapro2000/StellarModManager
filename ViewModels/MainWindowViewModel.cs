@@ -67,5 +67,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             _ = CheckForAppUpdates();
         }
+
+
+        LoadInstalledModpacks();
     }
 }

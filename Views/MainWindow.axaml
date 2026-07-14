@@ -94,6 +94,10 @@
                     <TabItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[InstalledModsTab]}">
                         <views:InstalledModsView/>
                     </TabItem>
+
+                    <TabItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[InstalledModpacksTab]}">
+                        <views:ModpacksView/>
+                    </TabItem>
                 </TabControl>
 
             </Border>

@@ -35,5 +35,7 @@
   "ConfirmRemoveButton": "Remove",
   "UpdateAvailableTitle": "Update Available",
   "Later": "Later",
-  "Download": "Download"
+  "Download": "Download",
+  "InstalledModpacksTab": "Installed Modpacks",
+  "View": "View"
 }
