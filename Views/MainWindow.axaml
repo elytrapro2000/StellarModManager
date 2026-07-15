@@ -107,6 +107,7 @@
         <views:SettingsPanelView IsVisible="{Binding IsSettingsOpen}"/>
         <views:ConfirmRemoveModView IsVisible="{Binding IsConfirmRemoveOpen}"/>
         <views:UpdatePanelView IsVisible="{Binding IsUpdatePanelOpen}"/>
+        <views:ModpackContent IsVisible="{Binding IsModpackContentPanelOpen}"/>
 
     </Grid>
 

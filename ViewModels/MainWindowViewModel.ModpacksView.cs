@@ -34,12 +34,12 @@ public partial class MainWindowViewModel
     [RelayCommand]
     private void ViewModpack(Modpack modpack)
     {
-        Environment.Exit(0);
+        OpenModpackContenView(modpack);
     }
 
 
     [RelayCommand]
-    private async Task DeployModpack(InstalledModInfo mod)
+    private async Task DeployModpack(Modpack mod)
     {
         if (GamePath == "No game selected")
         {
@@ -47,12 +47,13 @@ public partial class MainWindowViewModel
             return;
         }
 
+        /*
         mod.IsDeploying = true;
         mod.DeployProgress = 0;
 
         try
         {
-            string libraryPath = Path.Combine(AppContext.BaseDirectory, "Library", mod.Id);
+            string libraryPath = Path.Combine(AppContext.BaseDirectory, "ModpackLibrary", mod.Id);
             var progress = new Progress<double>(pct => mod.DeployProgress = pct);
 
             await Task.Run(() => deploymentService.DeployMod(libraryPath, GamePath, progress));
@@ -67,6 +68,7 @@ public partial class MainWindowViewModel
         {
             mod.IsDeploying = false;
         }
+        */
     }
 
     [RelayCommand]

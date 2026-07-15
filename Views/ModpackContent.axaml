@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:StellarModManager.ViewModels"
+             xmlns:loc="using:StellarModManager.Services"
+             x:Class="StellarModManager.Views.ModpackContent"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Border
+        Background="#66000000"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Border
+            Width="380"
+            Padding="28"
+            CornerRadius="20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            BoxShadow="0 8 32 0 #55000000"
+            Background="{DynamicResource Theme.CardBackgroundBrush}">
+            <StackPanel Spacing="18">
+                <TextBlock
+                    Text="{Binding ModpackCurrentlyViewed.Name}"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource Theme.TextPrimaryBrush}"/>
+                <TextBlock
+                    Text="{Binding ModpackCurrentlyViewed.Description}"
+                    FontSize="13"
+                    TextWrapping="Wrap"
+                    Foreground="{DynamicResource Theme.TextSecondaryBrush}"/>
+                <!--TEMPORARY List of Mod IDs until full Display of Mods possible-->
+                <ListBox ItemsSource="{Binding ModpackCurrentlyViewed.ModIDs}"/>
+                <Grid ColumnDefinitions="*,*" Margin="0,6,0,0">
+                    <Button
+                        Classes="primary"
+                        Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Close]}"
+                        Command="{Binding CloseModpackContentViewCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <!-- TODO: Play / Deploy Modpack Button
+                    <Button
+                        Grid.Column="1"
+                        Classes="danger"
+                        Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[ConfirmRemoveButton]}"
+                        Command="{Binding ConfirmRemoveCommand}"
+                        Margin="6,0,0,0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    -->
+                </Grid>
+            </StackPanel>
+            <!-- TODO eventually: Modpack Editing with buttons, for now it just shows the ID
+            <ItemsControl ItemsSource="{Binding ModpackCurrentlyViewed.ModIDs}">
+            <ItemsControl.ItemTemplate>
+            <DataTemplate>
+            <Border Classes="modCard">
+            <StackPanel Spacing="10">
+
+            <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="4">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Theme.TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Version}" FontSize="12" Foreground="{DynamicResource Theme.AccentEndBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding Description}" FontSize="14" Foreground="{DynamicResource Theme.TextPrimaryBrush}"/>
+            </StackPanel>
+            <TextBlock
+            IsVisible="{Binding IsUpdateAvailable}"
+            Text="{Binding LatestVersion, StringFormat='Update available: {0}'}"
+            FontSize="12"
+            FontWeight="SemiBold"
+            Foreground="{DynamicResource Theme.DangerBrush}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+            <Button
+            Classes="secondary"
+            Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[InstallToGame]}"
+            IsEnabled="{Binding !IsDeploying}"
+            Command="{Binding $parent[UserControl].DataContext.DeployModpackCommand}"
+            CommandParameter="{Binding}"/>
+
+            <Button
+            Classes="danger"
+            Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[Remove]}"
+            IsEnabled="{Binding !IsRemoving}"
+            Command="{Binding $parent[UserControl].DataContext.RequestRemoveModpackCommand}"
+            CommandParameter="{Binding}"/>
+
+            <Button
+            Classes="secondary"
+            Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[View]}"
+            Command="{Binding $parent[UserControl].DataContext.ViewModpackCommand}"
+            CommandParameter="{Binding}"/>
+            </StackPanel>
+            </Grid>
+
+            <StackPanel IsVisible="{Binding IsDeploying}" Spacing="4">
+            <ProgressBar Classes="modProgress" Minimum="0" Maximum="100" Value="{Binding DeployProgress}"/>
+            <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[CopyingToGame]}" FontSize="11" Foreground="{DynamicResource Theme.TextSecondaryBrush}"/>
+            </StackPanel>
+
+
+            </StackPanel>
+            </Border>
+            </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            -->
+        </Border>
+    </Border>
+</UserControl>

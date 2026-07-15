@@ -14,14 +14,18 @@ public class InstalledModpacksService
         if (!Directory.Exists(libraryPath))
             return modpacks;
 
-        foreach (string modpackFile in Directory.GetFiles(libraryPath))
+        foreach (string modpackFilePath in Directory.GetFiles(libraryPath))
         {
 
-            string json = File.ReadAllText(modpackFile);
+            string json = File.ReadAllText(modpackFilePath);
             Modpack? modpack = JsonSerializer.Deserialize<Modpack>(json);
 
             if (modpack != null)
+            {
+                modpack.ModpackFilePath = modpackFilePath;
                 modpacks.Add(modpack);
+            }
+                
         }
 
         return modpacks;

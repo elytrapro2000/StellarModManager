@@ -19,6 +19,9 @@ public partial class Modpack : ObservableObject
     public List<string> ModIDs { get; set; } = new();
 
     [JsonIgnore]
+    public string ModpackFilePath { get; set; } = "";
+
+    [JsonIgnore]
     [ObservableProperty]
     private bool isDeploying;
 
