@@ -15,6 +15,8 @@ public partial class MainWindowViewModel
     private readonly ModRepositoryService repositoryService = new();
     private readonly ModInstallerService installerService = new();
 
+    public const string ModRepositoryUrl = "https://raw.githubusercontent.com/jollyname/StellarModRepository/main/mods.json";
+
     [RelayCommand]
     private async Task InstallMod(OnlineModInfo mod)
     {
@@ -57,7 +59,7 @@ public partial class MainWindowViewModel
     private async Task RefreshMods()
     {
         var mods = await repositoryService.GetModsAsync(
-            "https://raw.githubusercontent.com/jollyname/StellarModRepository/main/mods.json"
+            ModRepositoryUrl
         );
 
         foreach (var mod in mods)

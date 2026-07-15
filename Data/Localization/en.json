@@ -37,5 +37,6 @@
   "Later": "Later",
   "Download": "Download",
   "InstalledModpacksTab": "Installed Modpacks",
-  "View": "View"
+  "View": "View",
+  "ModNotInstalled": "Mod is not installed to disk, will be downloaded on play"
 }

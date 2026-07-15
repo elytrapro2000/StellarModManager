@@ -15,7 +15,7 @@ namespace StellarModManager.ViewModels;
 public partial class MainWindowViewModel
 {
     [ObservableProperty]
-    private Modpack? modpackCurrentlyViewed;
+    private Modpack? currentlyViewedModpack;
 
     [ObservableProperty]
     public bool isModpackContentPanelOpen = false;
@@ -23,7 +23,7 @@ public partial class MainWindowViewModel
     [RelayCommand]
     private void OpenModpackContenView(Modpack modpack)
     {
-        ModpackCurrentlyViewed = modpack;
+        CurrentlyViewedModpack = modpack;
         IsModpackContentPanelOpen = true;
     }
 
@@ -31,5 +31,11 @@ public partial class MainWindowViewModel
     private void CloseModpackContentView(Modpack modpack)
     {
         IsModpackContentPanelOpen = false;
+    }
+
+    [RelayCommand]
+    private void RemoveModFromCurrentModpack(ModpackModInfo mod)
+    {
+        CurrentlyViewedModpack?.Mods.Remove(mod);
     }
 }

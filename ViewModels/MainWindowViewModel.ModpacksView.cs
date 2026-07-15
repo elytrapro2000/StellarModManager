@@ -4,7 +4,9 @@ using CommunityToolkit.Mvvm.Input;
 using StellarModManager.Models;
 using StellarModManager.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,9 +27,49 @@ public partial class MainWindowViewModel
 
         var modpacks = installedModpacksService.GetInstalledModpacks(libraryPath);
 
-        foreach (var modpack in modpacks)
+        
+        foreach (Modpack modpack in modpacks)
         {
             InstalledModpacks.Add(modpack);
+            FillModpackModsCollection(modpack);
+        }
+    }
+
+    private async Task FillModpackModsCollection(Modpack modpack)
+    {
+        modpack.Mods.Clear();
+
+        List<OnlineModInfo>? onlineMods = null;
+
+        foreach (string modID in modpack.ModIDs)
+        {
+            bool modAdded = false;
+            foreach (ModInfo modInfo in InstalledMods)
+            {
+                if (modInfo.Id == modID)
+                {
+                    modpack.Mods.Add(new ModpackModInfo(modInfo));
+                    modAdded = true;
+                    break;
+                }
+            }
+
+            if (modAdded) continue; //Dont check online mods if already found in InstalledMods
+
+            //If onlineMods null -> GetModsAsync from Online Repository
+            onlineMods ??= await new ModRepositoryService().GetModsAsync(ModRepositoryUrl);
+
+            foreach (ModInfo modInfo in onlineMods)
+            {
+                if (modInfo.Id == modID)
+                {
+                    modpack.Mods.Add(new ModpackModInfo(modInfo));
+                    modAdded = true;
+                    break;
+                }
+            }
+
+            //TODO: Add a status text or some feedback if a mod from the modIds was not found at all
         }
     }
 
@@ -37,9 +79,15 @@ public partial class MainWindowViewModel
         OpenModpackContenView(modpack);
     }
 
+    [RelayCommand]
+    private async Task DeplayCurrentlyViewedModpack()
+    {
+        if (CurrentlyViewedModpack == null) return;
+        await DeployModpack(CurrentlyViewedModpack);
+    }
 
     [RelayCommand]
-    private async Task DeployModpack(Modpack mod)
+    private async Task DeployModpack(Modpack modpack)
     {
         if (GamePath == "No game selected")
         {
@@ -47,18 +95,54 @@ public partial class MainWindowViewModel
             return;
         }
 
-        /*
-        mod.IsDeploying = true;
-        mod.DeployProgress = 0;
+        modpack.IsDeploying = true;
+        modpack.DeployProgress = 0;
 
-        try
+        try //TODO: Status Texts for removing previously deployed mods, deploying modpack, .. in Modpack Content Window
         {
-            string libraryPath = Path.Combine(AppContext.BaseDirectory, "ModpackLibrary", mod.Id);
-            var progress = new Progress<double>(pct => mod.DeployProgress = pct);
+            List<Task> tasks = new();
 
-            await Task.Run(() => deploymentService.DeployMod(libraryPath, GamePath, progress));
+            //Download missing mods
+            string downloadsDir = Path.Combine(AppContext.BaseDirectory, "Downloads");
 
-            MelonLoaderStatusText = $"{mod.Name} copied to game";
+            foreach (ModpackModInfo modInfo in modpack.Mods)
+            {
+                Debug.WriteLine("Downloading " + modInfo.Name);
+                if(!modInfo.IsInstalled)
+                {
+                    string zipFile = Path.Combine(downloadsDir, $"{modInfo.Id}.zip");
+                    string libraryPath = Path.Combine(AppContext.BaseDirectory, "Library", modInfo.Id);
+
+                    //TODO: Add Progress bars to everything in this method
+#pragma warning disable CS8604 // modInfo.DownloadUrl is not null because !modInfo.IsInstalled
+                    tasks.Add(repositoryService.DownloadModAsync(modInfo.DownloadUrl, zipFile));
+#pragma warning restore CS8604
+                    tasks.Add(installerService.InstallAsync(zipFile, libraryPath));
+                }
+            }
+
+            await Task.WhenAll(tasks); //Wait for Downloads to finish
+
+            //Remove already deployed Mods
+            string[] deployedModLibraryPaths = FindAllDeployedMods();
+            foreach(string path in deployedModLibraryPaths)
+            {
+                Debug.WriteLine("Removing Deployed " + path);
+                deploymentService.RemoveDeployedFiles(path, GamePath);
+            }
+
+            //Deploy all Mods
+            foreach (ModpackModInfo modInfo in modpack.Mods)
+            {
+                Debug.WriteLine("Deploying " + modInfo.Name);
+                string libraryPath = Path.Combine(AppContext.BaseDirectory, "Library", modInfo.Id);
+                var progress = new Progress<double>(pct => modpack.DeployProgress = pct);
+
+                tasks.Add(Task.Run(() => deploymentService.DeployMod(libraryPath, GamePath, progress)));
+            }
+
+            Debug.WriteLine("Deployed Modpack " + modpack.Name);
+            MelonLoaderStatusText = $"{modpack.Name} copied to game";
         }
         catch (Exception ex)
         {
@@ -66,44 +150,34 @@ public partial class MainWindowViewModel
         }
         finally
         {
-            mod.IsDeploying = false;
+            modpack.IsDeploying = false;
         }
-        */
+    }
+
+    /// <summary>
+    /// Returns an array of paths to the mod folders in the library of the mods that are deployed.
+    /// </summary>
+    private string[] FindAllDeployedMods()
+    {
+        //Find all folders with manifest files
+        string library = Path.Combine(AppContext.BaseDirectory, "Library");
+
+        string[] manifestPaths = Directory.GetFiles(library,$"*{ModDeploymentService.ManifestFileName}");
+
+        string[] folderPaths = new string[manifestPaths.Length];
+
+        for (int i = 0; i < manifestPaths.Length; i++)
+        {
+            folderPaths[i] = Path.GetDirectoryName(manifestPaths[i]) ?? "";
+        }
+
+        return folderPaths;
     }
 
     [RelayCommand]
     private async Task UninstallModpack(InstalledModInfo mod)
     {
-        mod.IsRemoving = true;
-
-        try
-        {
-            string libraryPath = Path.Combine(AppContext.BaseDirectory, "Library", mod.Id);
-
-            await Task.Run(() =>
-            {
-                if (GamePath != "No game selected")
-                {
-                    deploymentService.RemoveDeployedFiles(libraryPath, GamePath);
-                }
-
-                if (Directory.Exists(libraryPath))
-                {
-                    Directory.Delete(libraryPath, true);
-                }
-            });
-
-            InstalledMods.Remove(mod);
-            MelonLoaderStatusText = $"{mod.Name} removed";
-        }
-        catch (Exception ex)
-        {
-            MelonLoaderStatusText = $"Remove failed: {ex.Message}";
-        }
-        finally
-        {
-            mod.IsRemoving = false;
-        }
+        
     }
 
     [RelayCommand]
@@ -127,54 +201,5 @@ public partial class MainWindowViewModel
     private async Task RemoveModpack(Modpack modpack)
     {
 
-    }
-
-    [RelayCommand]
-    private async Task UpdateModpack(InstalledModInfo mod)
-    {
-        OnlineModInfo? onlineMatch = OnlineMods.FirstOrDefault(m => m.Id == mod.Id);
-
-        if (onlineMatch == null)
-        {
-            MelonLoaderStatusText = "Could not find this mod in the online repository";
-            return;
-        }
-
-        mod.IsUpdating = true;
-        mod.UpdateProgress = 0;
-         
-        try
-        {
-            string libraryPath = Path.Combine(AppContext.BaseDirectory, "Library", mod.Id);
-
-            // Clean out whatever the old version placed in the game folder first since file layouts might change between mod versions.
-            if (GamePath != "No game selected")
-            {
-                await Task.Run(() => deploymentService.RemoveDeployedFiles(libraryPath, GamePath));
-            }
-
-            string downloads = Path.Combine(AppContext.BaseDirectory, "Downloads");
-            Directory.CreateDirectory(downloads);
-
-            string zipFile = Path.Combine(downloads, $"{mod.Id}.zip");
-            var progress = new Progress<double>(pct => mod.UpdateProgress = pct);
-
-            await repositoryService.DownloadModAsync(onlineMatch.DownloadUrl, zipFile, progress);
-            await installerService.InstallAsync(zipFile, libraryPath);
-
-            File.Delete(zipFile);
-
-            MelonLoaderStatusText = $"{mod.Name} updated to {onlineMatch.Version}. Install it to your game again to update the deployed copy.";
-        }
-        catch (Exception ex)
-        {
-            MelonLoaderStatusText = $"Update failed: {ex.Message}";
-        }
-        finally
-        {
-            mod.IsUpdating = false;
-        }
-
-        LoadInstalledMods();
     }
 }

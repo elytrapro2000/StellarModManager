@@ -8,7 +8,7 @@ namespace StellarModManager.Services;
 
 public class ModDeploymentService
 {
-    private const string ManifestFileName = ".deployment.json";
+    public const string ManifestFileName = ".deployment.json";
     private const string MetadataFileName = "mod.json";
 
     public void DeployMod(string installedModPath, string gamePath, IProgress<double>? progress = null)
