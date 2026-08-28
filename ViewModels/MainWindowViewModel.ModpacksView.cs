@@ -19,13 +19,13 @@ public partial class MainWindowViewModel
 
     private readonly InstalledModpacksService installedModpacksService = new();
 
+    private readonly string modpackLibraryPath = Path.Combine(AppContext.BaseDirectory, "ModpackLibrary");
+
     private void LoadInstalledModpacks()
     {
-        string libraryPath = Path.Combine(AppContext.BaseDirectory, "ModpackLibrary");
-
         InstalledModpacks.Clear();
 
-        var modpacks = installedModpacksService.GetInstalledModpacks(libraryPath);
+        var modpacks = installedModpacksService.GetInstalledModpacks(modpackLibraryPath);
 
         
         foreach (Modpack modpack in modpacks)
@@ -77,6 +77,19 @@ public partial class MainWindowViewModel
     private void ViewModpack(Modpack modpack)
     {
         OpenModpackContenView(modpack);
+    }
+
+    [RelayCommand]
+    private void OpenModpackDirectory()
+    {
+        try
+        {
+            Process.Start("explorer.exe",modpackLibraryPath);
+        }
+        catch
+        {
+
+        }
     }
 
     [RelayCommand]

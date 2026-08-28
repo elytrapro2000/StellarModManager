@@ -38,5 +38,6 @@
   "Download": "Download",
   "InstalledModpacksTab": "Installed Modpacks",
   "View": "View",
-  "ModNotInstalled": "Mod is not installed to disk, will be downloaded on play"
+  "ModNotInstalled": "Mod is not installed to disk, will be downloaded on play",
+  "OpenModpackDirectory": "Open Modpack Directory"
 }

@@ -4,12 +4,14 @@
              xmlns:loc="using:StellarModManager.Services"
              x:Class="StellarModManager.Views.ModpacksView"
              x:DataType="vm:MainWindowViewModel">
-
-
-
     <Grid RowDefinitions="Auto,*" Margin="0,16,0,0">
-
-        <ScrollViewer Grid.Row="1">
+        
+        <StackPanel Spacing="4">
+            <Button
+            Classes="secondary"
+            Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=[OpenModpacksDirectory]}"
+            Command="{Binding $parent[UserControl].DataContext.OpenModpackDirectoryCommand}"/>
+            <ScrollViewer Grid.Row="1">
             <ItemsControl ItemsSource="{Binding InstalledModpacks}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -77,6 +79,6 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-
+        </StackPanel>
     </Grid>
 </UserControl>
